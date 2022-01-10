@@ -56,7 +56,7 @@ public class JWordleSolver implements Runnable {
         boolean isValidResponse = false;
         String response = "";
         start: while (!isValidResponse) {
-            System.out.println("Please enter response from Wordle: ");
+            System.out.print("Please enter response from Wordle: ");
             response = keyboard.next().toUpperCase();
 
             if (response.length() != 5) {
@@ -77,7 +77,7 @@ public class JWordleSolver implements Runnable {
             switch (response.charAt(i)) {
                 case 'G' -> gameState.setCorrectCharacter(i, guess.charAt(i));
                 case 'Y' -> gameState.addMisplacedCharacter(i, guess.charAt(i));
-                case 'W' -> gameState.addRejectedCharacter(guess.charAt(i));
+                case 'W' -> gameState.addRejectedCharacter(i, guess.charAt(i));
             }
         }
     }

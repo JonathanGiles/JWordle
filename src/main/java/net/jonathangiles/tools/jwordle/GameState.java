@@ -16,10 +16,10 @@ public class GameState {
     private final char[] correctLetters = new char[5];
 
     // all rejected letters that are not in the word at all
-    private final Set<Character> rejectedLetters = new HashSet<>();
+    private final Map<Character, LetterLocation> rejectedLetters = new HashMap<>();
 
     // all letters that are in the word, but in the incorrect location
-    private final Map<Character, MisplacedLetter> misplacedLetters = new HashMap<>();
+    private final Map<Character, LetterLocation> misplacedLetters = new HashMap<>();
 
     public GameState(List<String> possibleWords) {
         this.possibleWords = new ArrayList<>(possibleWords);
@@ -33,11 +33,11 @@ public class GameState {
     }
 
     public void addMisplacedCharacter(int wrongLocation, char inputChar) {
-        misplacedLetters.computeIfAbsent(inputChar, _char -> new MisplacedLetter()).addKnownWrongLocation(wrongLocation);
+        misplacedLetters.computeIfAbsent(inputChar, _char -> new LetterLocation()).addKnownWrongLocation(wrongLocation);
     }
 
-    public void addRejectedCharacter(char inputChar) {
-        this.rejectedLetters.add(inputChar);
+    public void addRejectedCharacter(int wrongLocation, char inputChar) {
+        this.rejectedLetters.computeIfAbsent(inputChar, _char -> new LetterLocation()).addKnownWrongLocation(wrongLocation);
     }
 
     public String generateGuess() {
@@ -72,9 +72,11 @@ public class GameState {
                 return false;
             }
 
-            // work through all rejected letters
-            if (rejectedLetters.contains(letter)) {
-                return false;
+            // work through all rejected letters. We have to be careful because many words have duplicate letters.
+            if (rejectedLetters.containsKey(letter)) {
+                if (!rejectedLetters.get(letter).isLetterAllowedAtLocation(i)) {
+                    return false;
+                }
             }
 
             // work through misplaced letters
@@ -95,7 +97,7 @@ public class GameState {
         return true;
     }
 
-    private static class MisplacedLetter {
+    private static class LetterLocation {
         private final BitSet knownWrongLocations = new BitSet();
 
         public void addKnownWrongLocation(int wrongLocation) {
