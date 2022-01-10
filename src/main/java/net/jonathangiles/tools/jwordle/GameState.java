@@ -99,12 +99,20 @@ public class GameState {
 
     private static class LetterLocation {
         private final BitSet knownWrongLocations = new BitSet();
+        private boolean letterFullyRejected = false;
 
         public void addKnownWrongLocation(int wrongLocation) {
-            this.knownWrongLocations.set(wrongLocation);
+            if (wrongLocation == -1) {
+                letterFullyRejected = true;
+            } else {
+                this.knownWrongLocations.set(wrongLocation);
+            }
         }
 
         public boolean isLetterAllowedAtLocation(int i) {
+            if (letterFullyRejected) {
+                return false;
+            }
             return !knownWrongLocations.get(i);
         }
     }

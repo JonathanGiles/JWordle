@@ -43,13 +43,13 @@ public class JWordleSolver implements Runnable {
     public void run() {
         GameState gameState = new GameState(words);
         for (int i = 0; i < 6; i++) {
-            String guess = gameState.generateGuess();
+            String guess = gameState.generateGuess().toUpperCase();
             processResponse(guess, gameState);
         }
     }
 
     private void processResponse(String guess, GameState gameState) {
-        System.out.println("Suggested guess is " + guess.toUpperCase());
+        System.out.println("Suggested guess is " + guess);
 
         // parse the string and feed it back into the game state.
         // The format is "G" for "green", "Y" for "yellow", and "W" for grey
@@ -74,11 +74,22 @@ public class JWordleSolver implements Runnable {
         }
 
         for (int i = 0; i < 5; i++) {
-            switch (response.charAt(i)) {
-                case 'G' -> gameState.setCorrectCharacter(i, guess.charAt(i));
-                case 'Y' -> gameState.addMisplacedCharacter(i, guess.charAt(i));
-                case 'W' -> gameState.addRejectedCharacter(i, guess.charAt(i));
+            char responseChar = response.charAt(i);
+            char guessChar = guess.charAt(i);
+            switch (responseChar) {
+                case 'G' -> gameState.setCorrectCharacter(i, guessChar);
+                case 'Y' -> gameState.addMisplacedCharacter(i, guessChar);
+                case 'W' -> {
+                    // we do this to better optimise situations where the same letter appears multiple times
+                    int count = getCharCount(guess, guessChar);
+                    gameState.addRejectedCharacter(count == 1 ? -1 : i, guessChar);
+                }
             }
         }
+    }
+
+    // how many times does c appear in word
+    private int getCharCount(String word, char c) {
+        return (int) word.chars().filter(ch -> ch == c).count();
     }
 }
